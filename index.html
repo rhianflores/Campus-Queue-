@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Student Portal | Login Page</title>
+
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <!-- ==================================================
+    LOGIN PAGE
+================================================== -->
+
+    <section id="loginPage">
+      <!-- UNIVERSITY BRAND -->
+
+      <div class="brand">
+        <div class="brand-logo">USTP</div>
+
+        <h1>UNIVERSITY OF SCIENCE AND TECHNOLOGY OF SOUTHERN PHILIPPINES</h1>
+
+        <p>CAMPUSQUEUE STUDENT PORTAL</p>
+      </div>
+
+      <!-- LOGIN BOX -->
+
+      <div class="login-box-wrap">
+        <div class="login-box" id="loginBox">
+          <div class="login-box-border"></div>
+
+          <div class="login-box-logo">
+            <span class="login-box-logo-mark">Portal</span>
+            <span class="login-box-logo-tagline">Login Page</span>
+          </div>
+
+          <form id="loginForm" novalidate>
+            <!-- USERNAME -->
+
+            <div class="input-group">
+              <input
+                type="text"
+                id="username"
+                placeholder="Username"
+                autocomplete="username"
+                required
+              />
+            </div>
+
+            <!-- PASSWORD -->
+
+            <div class="input-group">
+              <input
+                type="password"
+                id="password"
+                placeholder="Password"
+                autocomplete="current-password"
+                required
+              />
+            </div>
+
+            <!-- OPTIONS -->
+
+            <div class="login-options">
+              <label class="remember">
+                <input type="checkbox" id="rememberMe" />
+                <span class="check">
+                  <svg width="15px" height="15px" viewBox="0 0 18 18">
+                    <path
+                      d="M1 9L1 9c0-4.4 3.6-8 8-8h0c4.4 0 8 3.6 8 8h0c0 4.4-3.6 8-8 8h0c-4.4 0-8-3.6-8-8z"
+                    ></path>
+                    <polyline points="1 9 7 14 15 4"></polyline>
+                  </svg>
+                </span>
+                Remember Me
+              </label>
+
+              <button type="submit" class="login-btn">
+                <span class="login-btn-inner">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 17l5-5-5-5v3H3v4h7v3z" />
+                    <path
+                      d="M13 3h6c1.1 0 2 .9 2 2v14c0 1.1-.9 2-2 2h-6v-2h6V5h-6V3z"
+                    />
+                  </svg>
+                  Login
+                </span>
+              </button>
+            </div>
+
+            <!-- ERROR -->
+
+            <p id="loginError" role="alert">
+              Please enter your username and password.
+            </p>
+          </form>
+
+          <!-- FORGOT PASSWORD -->
+
+          <div class="forgot">
+            <h3>Forgot your password?</h3>
+
+            <p>
+              No worries,
+              <a href="#" id="resetPassword"> please click here </a>
+              to reset your password.
+            </p>
+          </div>
+
+          <div class="login-box-bottom-text">Queue Page</div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+
+      <div class="login-footer">
+        <p>
+          Choose Language
+
+          <select id="language">
+            <option>English</option>
+            <option>Filipino</option>
+          </select>
+        </p>
+
+        <br />
+
+        <p>Powered by : Group - 2</p>
+      </div>
+    </section>
+
+    <!-- ==================================================
+    DASHBOARD
+================================================== -->
+
+    <section id="dashboard">
+      <header class="dashboard-header">
+        <h2>CampusQueue</h2>
+
+        <span class="welcome-user">
+          Welcome, <strong id="displayUsername"></strong>
+        </span>
+
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </header>
+
+      <main class="dashboard-content">
+        <div class="dashboard-title">
+          <h1>University Services</h1>
+
+          <p>Select the service you would like to queue for.</p>
+        </div>
+
+        <div class="services">
+          <!-- REGISTRAR -->
+
+          <div class="service-card" onclick="chooseService('Registrar')">
+            <div class="traffic-lights">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+
+            <div class="service-icon">📋</div>
+
+            <h3>Registrar</h3>
+
+            <p>Academic records, enrollment, certificates, and documents.</p>
+          </div>
+
+          <!-- CASHIER -->
+
+          <div class="service-card" onclick="chooseService('Cashier')">
+            <div class="traffic-lights">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+
+            <div class="service-icon">💳</div>
+
+            <h3>Cashier</h3>
+
+            <p>Tuition payments and financial transactions.</p>
+          </div>
+
+          <!-- CLINIC -->
+
+          <div class="service-card" onclick="chooseService('Clinic')">
+            <div class="traffic-lights">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+
+            <div class="service-icon">🏥</div>
+
+            <h3>Clinic</h3>
+
+            <p>Student health services and medical assistance.</p>
+          </div>
+
+          <!-- LIBRARY -->
+
+          <div class="service-card" onclick="chooseService('Library')">
+            <div class="traffic-lights">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+
+            <div class="service-icon">📚</div>
+
+            <h3>Library</h3>
+
+            <p>Books, references, and library assistance.</p>
+          </div>
+
+          <!-- STUDENT SERVICES -->
+
+          <div class="service-card" onclick="chooseService('Student Services')">
+            <div class="traffic-lights">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+
+            <div class="service-icon">🎓</div>
+
+            <h3>Student Services</h3>
+
+            <p>Student assistance and other university services.</p>
+          </div>
+        </div>
+      </main>
+    </section>
+
+    <!-- ==================================================
+    QUEUE PAGE
+================================================== -->
+
+    <section id="queuePage">
+      <div class="queue-card">
+        <h2>Your Queue Details</h2>
+
+        <p>Your queue number is:</p>
+
+        <div class="queue-number" id="queueNumber">01</div>
+
+        <div class="queue-details">
+          <p>
+            <strong>Student:</strong>
+            <span id="queueStudent"></span>
+          </p>
+
+          <p>
+            <strong>Service:</strong>
+            <span id="queueService"></span>
+          </p>
+
+          <p>
+            <strong>People Ahead:</strong>
+            <span id="queuePeople"></span>
+          </p>
+        </div>
+
+        <p style="margin-top: 20px">Please wait for your queue number.</p>
+
+        <button class="back-btn" onclick="backToServices()">
+          ← Back to Services
+        </button>
+      </div>
+    </section>
+
+    <script src="script.js"></script>
+  </body>
+</html>

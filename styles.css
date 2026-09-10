@@ -1,0 +1,785 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+}
+
+/* ================================
+   LOGIN PAGE
+================================= */
+
+#loginPage {
+  min-height: 100vh;
+
+  background-image:
+    linear-gradient(135deg, rgba(9, 26, 54, 0.72), rgba(13, 90, 116, 0.55)),
+    url("background-campus.png");
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  position: relative;
+  overflow: hidden;
+}
+
+/* Moving aurora-sweep gradient, navy/gold, rotating across the page */
+
+#loginPage::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 220%;
+  height: 220%;
+  transform: translate(-50%, -50%) rotate(0deg);
+
+  background: linear-gradient(
+    90deg,
+    rgba(36, 49, 55, 0) 0%,
+    rgba(36, 49, 55, 0.6) 32%,
+    rgba(189, 159, 103, 0.5) 50%,
+    rgba(36, 49, 55, 0.6) 68%,
+    rgba(36, 49, 55, 0) 100%
+  );
+
+  z-index: 0;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+
+  animation: auroraSweep 16s linear infinite;
+}
+
+@keyframes auroraSweep {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #loginPage::before {
+    animation: none;
+  }
+}
+
+/* ================================
+   UNIVERSITY LOGO
+================================= */
+
+.brand {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(90vw, 980px);
+  text-align: center;
+  color: white;
+  z-index: 2;
+  text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.8);
+}
+
+.brand-logo {
+  font-size: clamp(62px, 8vw, 130px);
+  line-height: 0.9;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #f4a900;
+  margin-bottom: 6px;
+}
+
+.brand h1 {
+  font-size: clamp(15px, 2vw, 30px);
+  letter-spacing: 2px;
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.brand p {
+  display: none;
+}
+
+/* ================================
+   LOGIN BOX (logo-reveal card,
+   adapted from Uiverse.io by
+   Smit-Prajapati)
+================================= */
+
+.login-box-wrap {
+  width: 375px;
+  margin-top: 110px;
+  position: relative;
+  z-index: 1;
+}
+
+.login-box {
+  position: relative;
+  background: #243137;
+  border-radius: 10px;
+  overflow: hidden;
+
+  padding: 34px 30px 46px;
+
+  color: #fff;
+
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45);
+
+  transition: all 0.4s ease-in-out;
+}
+
+.login-box:hover {
+  border-radius: 0;
+  transform: scale(1.02);
+}
+
+.login-box-border {
+  position: absolute;
+  inset: 0;
+  border: 2px solid #bd9f67;
+  opacity: 0;
+  transform: rotate(6deg);
+  transition: all 0.5s ease-in-out;
+  pointer-events: none;
+}
+
+.login-box:hover .login-box-border {
+  inset: 10px;
+  opacity: 1;
+  transform: rotate(0);
+}
+
+.login-box-logo {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.login-box-logo-mark {
+  display: block;
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: #bd9f67;
+  transition: letter-spacing 0.4s ease-in-out;
+}
+
+.login-box:hover .login-box-logo-mark {
+  letter-spacing: 6px;
+}
+
+.login-box-logo-tagline {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(189, 159, 103, 0.75);
+  opacity: 0;
+  transition: all 0.5s ease-in-out 0.1s;
+}
+
+.login-box:hover .login-box-logo-tagline {
+  opacity: 1;
+}
+
+.login-box-bottom-text {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  font-size: 10px;
+  text-transform: uppercase;
+  padding: 0 8px;
+  color: #bd9f67;
+  background: #243137;
+  opacity: 0;
+  letter-spacing: 4px;
+  transition: all 0.5s ease-in-out;
+}
+
+.login-box:hover .login-box-bottom-text {
+  letter-spacing: 6px;
+  opacity: 1;
+}
+
+/* ================================
+   INPUTS
+================================= */
+
+.input-group {
+  margin-bottom: 16px;
+}
+
+.input-group input {
+  width: 100%;
+  height: 38px;
+
+  padding: 0 12px;
+
+  background: rgba(0, 0, 0, 0.25);
+
+  border: 1px solid #aaa;
+
+  color: white;
+
+  font-size: 14px;
+}
+
+.input-group input::placeholder {
+  color: #ccc;
+}
+
+.input-group input:focus {
+  outline: none;
+
+  border-color: #bd9f67;
+
+  color: #f0e4d0;
+
+  background-color: rgba(189, 159, 103, 0.08);
+
+  box-shadow: -3px -3px 15px rgba(189, 159, 103, 0.4);
+
+  transition: 0.1s;
+  transition-property: box-shadow, border-color, background-color;
+}
+
+/* ================================
+   LOGIN OPTIONS
+================================= */
+
+.login-options {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  margin-top: 8px;
+}
+
+.remember {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  font-size: 12px;
+  color: white;
+  cursor: pointer;
+}
+
+.remember input[type="checkbox"] {
+  display: none;
+}
+
+/* Animated checkbox, adapted from Uiverse.io
+   by WhiteNervosa (variation of work by @mrhyddenn) */
+
+.check {
+  --accent-color: #bd9f67;
+
+  cursor: pointer;
+  position: relative;
+  margin: 0;
+  width: 15px;
+  height: 15px;
+  -webkit-tap-highlight-color: transparent;
+  transform: translate3d(0, 0, 0);
+}
+
+.check:before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  background: rgba(189, 159, 103, 0.12);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.check svg {
+  position: relative;
+  z-index: 1;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke: #c8ccd4;
+  stroke-width: 1.5;
+  transform: translate3d(0, 0, 0);
+  transition: all 0.2s ease;
+}
+
+.check svg path {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 0;
+}
+
+.check svg polyline {
+  stroke-dasharray: 22;
+  stroke-dashoffset: 66;
+}
+
+.check:hover:before {
+  opacity: 1;
+}
+
+.check:hover svg {
+  stroke: var(--accent-color, #a3e583);
+}
+
+#rememberMe:checked + .check svg {
+  stroke: var(--accent-color, #a3e583);
+}
+
+#rememberMe:checked + .check svg path {
+  stroke-dashoffset: 60;
+  transition: all 0.3s linear;
+}
+
+#rememberMe:checked + .check svg polyline {
+  stroke-dashoffset: 42;
+  transition: all 0.2s linear;
+  transition-delay: 0.15s;
+}
+
+/* ================================
+   LOGIN BUTTON
+================================= */
+
+.login-btn {
+  width: 110px;
+  height: 30px;
+
+  border-radius: 15px;
+
+  border: none;
+  padding: 0;
+
+  cursor: pointer;
+  transition: 0.3s ease;
+
+  background: linear-gradient(
+    to bottom right,
+    #2e8eff 0%,
+    rgba(46, 142, 255, 0) 30%
+  );
+  background-color: rgba(46, 142, 255, 0.2);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-btn:hover,
+.login-btn:focus {
+  background-color: rgba(46, 142, 255, 0.7);
+  box-shadow: 0 0 10px rgba(46, 142, 255, 0.5);
+  outline: none;
+}
+
+.login-btn-inner {
+  width: 110px;
+  height: 30px;
+
+  border-radius: 13px;
+
+  background-color: #1a1a1a;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.login-btn-inner svg {
+  width: 22px;
+  height: 22px;
+  fill: #fff;
+}
+
+/* ================================
+   ERROR MESSAGE
+================================= */
+
+#loginError {
+  display: none;
+
+  color: #ff7777;
+
+  text-align: center;
+
+  font-size: 13px;
+
+  margin-top: 15px;
+}
+
+/* ================================
+   FORGOT PASSWORD
+================================= */
+
+.forgot {
+  margin-top: 28px;
+
+  padding-top: 22px;
+
+  border-top: 1px dotted #aaa;
+
+  font-size: 14px;
+
+  line-height: 1.6;
+}
+
+.forgot h3 {
+  font-size: 19px;
+
+  font-weight: normal;
+
+  margin-bottom: 12px;
+}
+
+.forgot a {
+  color: #1597d4;
+
+  text-decoration: none;
+}
+
+.forgot a:hover {
+  text-decoration: underline;
+}
+
+/* ================================
+   FOOTER
+================================= */
+
+.login-footer {
+  color: white;
+
+  text-align: center;
+
+  font-size: 13px;
+
+  margin-top: 15px;
+
+  text-shadow: 1px 1px 10px black;
+
+  position: relative;
+  z-index: 2;
+}
+
+.login-footer select {
+  margin-left: 5px;
+}
+
+/* ================================
+   DASHBOARD
+================================= */
+
+#dashboard {
+  display: none;
+
+  min-height: 100vh;
+
+  background: #f3f5f7;
+}
+
+/* HEADER */
+
+.dashboard-header {
+  background: #173b7a;
+
+  color: white;
+
+  padding: 17px 40px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+}
+
+.dashboard-header h2 {
+  font-size: 22px;
+}
+
+.welcome-user {
+  font-size: 14px;
+}
+
+.logout-btn {
+  background: white;
+
+  color: #173b7a;
+
+  border: none;
+
+  padding: 9px 18px;
+
+  cursor: pointer;
+
+  font-weight: bold;
+}
+
+.logout-btn:hover {
+  background: #ddd;
+}
+
+/* DASHBOARD CONTENT */
+
+.dashboard-content {
+  max-width: 1100px;
+
+  margin: auto;
+
+  padding: 45px 25px;
+}
+
+.dashboard-title {
+  margin-bottom: 30px;
+}
+
+.dashboard-title h1 {
+  color: #173b7a;
+
+  font-size: 30px;
+
+  margin-bottom: 8px;
+}
+
+.dashboard-title p {
+  color: #666;
+}
+
+/* ================================
+   SERVICES
+================================= */
+
+.services {
+  display: grid;
+
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+
+  justify-items: center;
+
+  gap: 20px;
+}
+
+.service-card {
+  width: 190px;
+  height: 120px;
+
+  padding: 0.5rem;
+
+  background: rgba(23, 59, 122, 0.34);
+
+  border-radius: 8px;
+
+  backdrop-filter: blur(5px);
+
+  border-bottom: 3px solid rgba(255, 255, 255, 0.44);
+  border-left: 2px rgba(255, 255, 255, 0.545) outset;
+
+  box-shadow: -20px 25px 20px rgba(0, 0, 0, 0.2);
+
+  transform: skewX(10deg);
+  transition: 0.4s;
+
+  overflow: hidden;
+
+  color: white;
+  cursor: pointer;
+}
+
+.service-card:hover {
+  height: 254px;
+  transform: skew(0deg);
+}
+
+.service-card .traffic-lights {
+  padding: 0.3rem 0.2rem 0;
+
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+}
+
+.service-card .dot {
+  width: 10px;
+  height: 10px;
+
+  border-radius: 50%;
+
+  box-shadow: -5px 5px 5px rgba(0, 0, 0, 0.28);
+}
+
+.service-card .dot.red {
+  background-color: #ff605c;
+}
+
+.service-card .dot.yellow {
+  background-color: #ffbd44;
+}
+
+.service-card .dot.green {
+  background-color: #00ca4e;
+}
+
+.service-icon {
+  font-size: 30px;
+
+  text-align: center;
+
+  margin-top: 6px;
+}
+
+.service-card h3 {
+  text-align: center;
+
+  margin: 0.6rem 0 0.4rem;
+
+  color: rgb(218, 244, 237);
+
+  text-shadow: -6px 3px 8px rgba(0, 0, 0, 0.55);
+
+  font-size: 16px;
+}
+
+.service-card p {
+  color: rgba(255, 255, 255, 0.85);
+
+  font-size: 12px;
+
+  text-align: center;
+
+  line-height: 1.5;
+
+  padding: 0 6px;
+}
+
+/* ================================
+   QUEUE PAGE
+================================= */
+
+#queuePage {
+  display: none;
+
+  min-height: 100vh;
+
+  background: #f3f5f7;
+
+  padding: 50px 20px;
+}
+
+.queue-card {
+  max-width: 550px;
+
+  margin: auto;
+
+  background: white;
+
+  padding: 40px;
+
+  text-align: center;
+
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.queue-card h2 {
+  color: #173b7a;
+
+  margin-bottom: 20px;
+}
+
+.queue-number {
+  font-size: 75px;
+
+  font-weight: bold;
+
+  color: #1597d4;
+
+  margin: 15px;
+}
+
+.queue-details {
+  background: #f3f5f7;
+
+  padding: 20px;
+
+  text-align: left;
+
+  line-height: 2;
+}
+
+.queue-details strong {
+  color: #173b7a;
+}
+
+.back-btn {
+  margin-top: 25px;
+
+  background: #173b7a;
+
+  color: white;
+
+  border: none;
+
+  padding: 11px 25px;
+
+  cursor: pointer;
+}
+
+.back-btn:hover {
+  background: #2563a8;
+}
+
+/* ================================
+   MOBILE
+================================= */
+
+@media (max-width: 600px) {
+  .brand {
+    top: 8px;
+  }
+
+  .brand-logo {
+    font-size: clamp(42px, 14vw, 72px);
+  }
+
+  .brand h1 {
+    font-size: 12px;
+  }
+
+  .login-box-wrap {
+    width: 90%;
+    margin-top: 100px;
+  }
+
+  .dashboard-header {
+    padding: 15px 20px;
+  }
+
+  .welcome-user {
+    display: none;
+  }
+}
