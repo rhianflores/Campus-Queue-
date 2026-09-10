@@ -243,34 +243,38 @@
 
     <section id="queuePage">
       <div class="queue-card">
-        <h2>Your Queue Details</h2>
+        <div class="queue-card-blob"></div>
 
-        <p>Your queue number is:</p>
+        <div class="queue-card-bg">
+          <h2>Your Queue Details</h2>
 
-        <div class="queue-number" id="queueNumber">01</div>
+          <p>Your queue number is:</p>
 
-        <div class="queue-details">
-          <p>
-            <strong>Student:</strong>
-            <span id="queueStudent"></span>
-          </p>
+          <div class="queue-number" id="queueNumber">01</div>
 
-          <p>
-            <strong>Service:</strong>
-            <span id="queueService"></span>
-          </p>
+          <div class="queue-details">
+            <p>
+              <strong>Student:</strong>
+              <span id="queueStudent"></span>
+            </p>
 
-          <p>
-            <strong>People Ahead:</strong>
-            <span id="queuePeople"></span>
-          </p>
+            <p>
+              <strong>Service:</strong>
+              <span id="queueService"></span>
+            </p>
+
+            <p>
+              <strong>People Ahead:</strong>
+              <span id="queuePeople"></span>
+            </p>
+          </div>
+
+          <p style="margin-top: 20px">Please wait for your queue number.</p>
+
+          <button class="back-btn" onclick="backToServices()">
+            ← Back to Services
+          </button>
         </div>
-
-        <p style="margin-top: 20px">Please wait for your queue number.</p>
-
-        <button class="back-btn" onclick="backToServices()">
-          ← Back to Services
-        </button>
       </div>
     </section>
 
