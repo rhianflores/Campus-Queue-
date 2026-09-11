@@ -1,178 +1,266 @@
 /* =========================================================
-   1. DATABASE INITIALIZATION (localStorage)
+   1. UTILITY & LOCALSTORAGE HELPERS
    ========================================================= */
 
-if (!localStorage.getItem("users")) {
-    const defaultUsers = {
-        "student1": "password123",
-        "admin": "admin123"
-    };
-    localStorage.setItem("users", JSON.stringify(defaultUsers));
+const Storage = {
+    get(key, defaultValue = null) {
+        try {
+            const data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : defaultValue;
+        } catch (error) {
+            console.error(`Error reading ${key} from localStorage:`, error);
+            return defaultValue;
+        }
+    },
+    set(key, value) {
+        try {
+            localStorage.setItem(key, JSON.stringify(value));
+            window.dispatchEvent(new Event("storage"));
+        } catch (error) {
+            console.error(`Error saving ${key} to localStorage:`, error);
+        }
+    },
+    remove(key) {
+        localStorage.removeItem(key);
+        window.dispatchEvent(new Event("storage"));
+    }
+};
+
+/* =========================================================
+   2. INITIALIZE DATABASE
+   ========================================================= */
+
+function initDatabase() {
+    if (!localStorage.getItem("users")) {
+        Storage.set("users", {
+            "student1": "password123",
+            "admin": "admin123"
+        });
+    }
+
+    if (!localStorage.getItem("serviceQueues")) {
+        Storage.set("serviceQueues", {
+            "Registrar": [],
+            "Cashier": [],
+            "Clinic": [],
+            "Library": []
+        });
+    }
 }
 
-if (!localStorage.getItem("serviceQueues")) {
-    const defaultQueues = {
-        "Registrar": [],
-        "Cashier": [],
-        "Clinic": [],
-        "Library": [],
-        "Student Services": []
-    };
-    localStorage.setItem("serviceQueues", JSON.stringify(defaultQueues));
-}
+initDatabase();
 
-// Restore active student session
 let currentStudent = localStorage.getItem("loggedInUser") || "";
 
 /* =========================================================
-   2. SESSION & STATE RESTORATION ON LOAD
+   3. AUDIO ALERT SYSTEM (WEB AUDIO API)
    ========================================================= */
 
-document.addEventListener("DOMContentLoaded", function () {
+function playCallSound() {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        
+        const ctx = new AudioContext();
+        const now = ctx.currentTime;
+
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc1.type = "sine";
+        osc2.type = "sine";
+
+        osc1.frequency.setValueAtTime(659.25, now);
+        osc2.frequency.setValueAtTime(880.00, now + 0.15);
+
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc1.start(now);
+        osc1.stop(now + 0.15);
+        osc2.start(now + 0.15);
+        osc2.stop(now + 0.6);
+    } catch (e) {
+        console.warn("Audio Context blocked or unsupported:", e);
+    }
+}
+
+/* =========================================================
+   4. VIEW ROUTER
+   ========================================================= */
+
+function showView(viewId) {
+    const views = ["loginPage", "dashboard", "queuePage", "adminPage"];
+    
+    views.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            if (id === viewId) {
+                element.style.display = (id === "loginPage" || id === "queuePage") ? "flex" : "block";
+            } else {
+                element.style.display = "none";
+            }
+        }
+    });
+}
+
+/* =========================================================
+   5. APP LIFECYCLE & EVENT BINDING
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+    bindEvents();
+
     const activeService = localStorage.getItem("activeService");
 
     if (currentStudent) {
-        document.getElementById("displayUsername").textContent = currentStudent;
-        
-        if (activeService) {
-            // Restore active queue page view
+        const displayUser = document.getElementById("displayUsername");
+        if (displayUser) displayUser.textContent = currentStudent;
+
+        if (currentStudent === "admin") {
+            showView("adminPage");
+            renderAdminDashboard();
+        } else if (activeService) {
             chooseService(activeService);
         } else {
-            // Restore active dashboard view
-            document.getElementById("loginPage").style.display = "none";
-            document.getElementById("dashboard").style.display = "block";
-            document.getElementById("queuePage").style.display = "none";
+            showView("dashboard");
         }
     } else {
-        // Fallback to initial login screen
-        document.getElementById("loginPage").style.display = "flex";
-        document.getElementById("dashboard").style.display = "none";
-        document.getElementById("queuePage").style.display = "none";
+        showView("loginPage");
     }
 });
 
-/* =========================================================
-   3. UI FORM TOGGLING (Login vs Register)
-   ========================================================= */
+function bindEvents() {
+    const loginForm = document.getElementById("loginForm");
+    const registerForm = document.getElementById("registerForm");
+    const cancelBtn = document.getElementById("cancelQueueBtn");
+    const resetPassword = document.getElementById("resetPassword");
+
+    if (loginForm) loginForm.addEventListener("submit", handleLogin);
+    if (registerForm) registerForm.addEventListener("submit", handleRegister);
+    if (cancelBtn) cancelBtn.addEventListener("click", cancelQueueTicket);
+    if (resetPassword) {
+        resetPassword.addEventListener("click", (e) => {
+            e.preventDefault();
+            alert("Demo Password Reset: Default accounts are 'student1' / 'password123' and 'admin' / 'admin123'.");
+        });
+    }
+}
 
 function toggleAuthMode(event, mode) {
     if (event) event.preventDefault();
 
     const loginSec = document.getElementById("loginSection");
     const regSec = document.getElementById("registerSection");
+    const loginErr = document.getElementById("loginError");
+    const regMsg = document.getElementById("registerMessage");
 
-    document.getElementById("loginError").style.display = "none";
-    document.getElementById("registerMessage").style.display = "none";
+    if (loginErr) loginErr.style.display = "none";
+    if (regMsg) regMsg.style.display = "none";
 
-    if (mode === "register") {
-        loginSec.style.display = "none";
-        regSec.style.display = "block";
-    } else {
-        regSec.style.display = "none";
-        loginSec.style.display = "block";
+    if (loginSec && regSec) {
+        if (mode === "register") {
+            loginSec.style.display = "none";
+            regSec.style.display = "block";
+        } else {
+            regSec.style.display = "none";
+            loginSec.style.display = "block";
+        }
     }
 }
 
 /* =========================================================
-   4. ACCOUNT REGISTRATION LOGIC
+   6. AUTHENTICATION & SESSION MANAGEMENT
    ========================================================= */
 
-document.getElementById("registerForm").addEventListener("submit", function (event) {
-    event.preventDefault();
-
-    const regUsername = document.getElementById("regUsername").value.trim();
-    const regPassword = document.getElementById("regPassword").value.trim();
-    const regMsg = document.getElementById("registerMessage");
-
-    if (!regUsername || !regPassword) {
-        regMsg.style.color = "#ff7777";
-        regMsg.textContent = "Please fill in all fields.";
-        regMsg.style.display = "block";
-        return;
-    }
-
-    const users = JSON.parse(localStorage.getItem("users"));
-
-    if (users[regUsername]) {
-        regMsg.style.color = "#ff7777";
-        regMsg.textContent = "Username already exists! Try another.";
-        regMsg.style.display = "block";
-        return;
-    }
-
-    users[regUsername] = regPassword;
-    localStorage.setItem("users", JSON.stringify(users));
-
-    regMsg.style.color = "#5cdb95";
-    regMsg.textContent = "Account created! Switching to login...";
-    regMsg.style.display = "block";
-
-    document.getElementById("username").value = regUsername;
-    document.getElementById("password").value = regPassword;
-
-    document.getElementById("regUsername").value = "";
-    document.getElementById("regPassword").value = "";
-
-    setTimeout(() => {
-        toggleAuthMode(null, "login");
-    }, 1500);
-});
-
-/* =========================================================
-   5. AUTHENTICATION (Login & Logout)
-   ========================================================= */
-
-document.getElementById("loginForm").addEventListener("submit", function (event) {
+function handleLogin(event) {
     event.preventDefault();
 
     const usernameInput = document.getElementById("username").value.trim();
     const passwordInput = document.getElementById("password").value.trim();
     const loginError = document.getElementById("loginError");
 
-    const users = JSON.parse(localStorage.getItem("users"));
+    const users = Storage.get("users", {});
 
     if (users[usernameInput] && users[usernameInput] === passwordInput) {
         currentStudent = usernameInput;
-        
-        // Save session locally to prevent losing progress on refresh
         localStorage.setItem("loggedInUser", currentStudent);
 
-        document.getElementById("displayUsername").textContent = currentStudent;
+        const displayUser = document.getElementById("displayUsername");
+        if (displayUser) displayUser.textContent = currentStudent;
 
-        document.getElementById("loginPage").style.display = "none";
-        document.getElementById("dashboard").style.display = "block";
-        loginError.style.display = "none";
+        if (loginError) loginError.style.display = "none";
+
+        if (currentStudent === "admin") {
+            showView("adminPage");
+            renderAdminDashboard();
+        } else {
+            showView("dashboard");
+        }
     } else {
-        loginError.textContent = "Invalid username or password!";
-        loginError.style.display = "block";
+        showStatusMessage(loginError, "Invalid username or password!", false);
     }
-});
+}
+
+function handleRegister(event) {
+    event.preventDefault();
+
+    const usernameInput = document.getElementById("regUsername");
+    const passwordInput = document.getElementById("regPassword");
+    const regMsg = document.getElementById("registerMessage");
+
+    const regUsername = usernameInput ? usernameInput.value.trim() : "";
+    const regPassword = passwordInput ? passwordInput.value.trim() : "";
+
+    if (!regUsername || !regPassword) {
+        showStatusMessage(regMsg, "Please fill in all fields.", false);
+        return;
+    }
+
+    const users = Storage.get("users", {});
+
+    if (users[regUsername]) {
+        showStatusMessage(regMsg, "Username already exists! Try another.", false);
+        return;
+    }
+
+    users[regUsername] = regPassword;
+    Storage.set("users", users);
+
+    showStatusMessage(regMsg, "Account created! Switching to login...", true);
+
+    document.getElementById("username").value = regUsername;
+    document.getElementById("password").value = regPassword;
+
+    usernameInput.value = "";
+    passwordInput.value = "";
+
+    setTimeout(() => toggleAuthMode(null, "login"), 1200);
+}
 
 function logout() {
     currentStudent = "";
 
-    // Remove persistent session data on logout
-    localStorage.removeItem("loggedInUser");
-    localStorage.removeItem("activeService");
+    Storage.remove("loggedInUser");
+    Storage.remove("activeService");
 
-    document.getElementById("username").value = "";
-    document.getElementById("password").value = "";
-    document.getElementById("rememberMe").checked = false;
-    document.getElementById("loginError").style.display = "none";
+    const loginError = document.getElementById("loginError");
+    if (loginError) loginError.style.display = "none";
 
-    document.getElementById("dashboard").style.display = "none";
-    document.getElementById("queuePage").style.display = "none";
-    document.getElementById("loginPage").style.display = "flex";
-
-    toggleAuthMode(null, "login");
+    showView("loginPage");
 }
 
 /* =========================================================
-   6. REAL QUEUE SYSTEM LOGIC
+   7. STUDENT QUEUE LOGIC (CHOOSE / LEAVE QUEUE)
    ========================================================= */
 
 function chooseService(serviceName) {
-    const serviceQueues = JSON.parse(localStorage.getItem("serviceQueues"));
+    const serviceQueues = Storage.get("serviceQueues", {});
 
     if (!serviceQueues[serviceName]) {
         serviceQueues[serviceName] = [];
@@ -183,16 +271,15 @@ function chooseService(serviceName) {
 
     if (userIndex === -1) {
         currentQueue.push(currentStudent);
-        localStorage.setItem("serviceQueues", JSON.stringify(serviceQueues));
+        Storage.set("serviceQueues", serviceQueues);
         userIndex = currentQueue.length - 1;
     }
 
-    // Preserve current service across reloads
     localStorage.setItem("activeService", serviceName);
 
     const queueTicketNumber = userIndex + 1;
     const peopleAhead = userIndex;
-    const estimatedWaitTime = peopleAhead * 5;
+    const estimatedWaitTime = Math.max(0, peopleAhead * 5);
 
     document.getElementById("queueStudent").textContent = currentStudent;
     document.getElementById("queueService").textContent = serviceName;
@@ -200,48 +287,105 @@ function chooseService(serviceName) {
     document.getElementById("queueWaitTime").textContent = estimatedWaitTime;
     document.getElementById("queueNumber").textContent = String(queueTicketNumber).padStart(2, "0");
 
-    document.getElementById("loginPage").style.display = "none";
-    document.getElementById("dashboard").style.display = "none";
-    document.getElementById("queuePage").style.display = "block";
+    showView("queuePage");
+}
+
+function cancelQueueTicket() {
+    const activeService = localStorage.getItem("activeService");
+    if (!activeService) return;
+
+    if (confirm("Are you sure you want to leave the queue?")) {
+        const serviceQueues = Storage.get("serviceQueues", {});
+        if (serviceQueues[activeService]) {
+            serviceQueues[activeService] = serviceQueues[activeService].filter(user => user !== currentStudent);
+            Storage.set("serviceQueues", serviceQueues);
+        }
+
+        Storage.remove("activeService");
+        showView("dashboard");
+    }
 }
 
 function backToServices() {
-    localStorage.removeItem("activeService");
-    document.getElementById("queuePage").style.display = "none";
-    document.getElementById("dashboard").style.display = "block";
+    showView("dashboard");
 }
 
 /* =========================================================
-   7. LIVE MULTI-TAB SYNCHRONIZATION
+   8. STAFF ADMIN PANEL CONTROLLER
    ========================================================= */
 
-window.addEventListener("storage", function (event) {
-    if (event.key === "serviceQueues") {
-        const activeService = localStorage.getItem("activeService");
-        if (activeService && document.getElementById("queuePage").style.display === "block") {
+function renderAdminDashboard() {
+    const adminContainer = document.getElementById("adminQueueList");
+    if (!adminContainer) return;
+
+    const serviceQueues = Storage.get("serviceQueues", {});
+    adminContainer.innerHTML = "";
+
+    Object.keys(serviceQueues).forEach(service => {
+        const queue = serviceQueues[service];
+        const nextUser = queue[0] || "None";
+
+        const card = document.createElement("div");
+        card.className = "admin-service-card";
+        card.innerHTML = `
+            <h3>${service}</h3>
+            <p><strong>In Queue:</strong> ${queue.length} students</p>
+            <p><strong>Next in Line:</strong> ${nextUser}</p>
+            <button onclick="serveNextStudent('${service}')">Call Next Student</button>
+        `;
+        adminContainer.appendChild(card);
+    });
+}
+
+function serveNextStudent(serviceName) {
+    const serviceQueues = Storage.get("serviceQueues", {});
+
+    if (serviceQueues[serviceName] && serviceQueues[serviceName].length > 0) {
+        const servedUser = serviceQueues[serviceName].shift();
+        Storage.set("serviceQueues", serviceQueues);
+        playCallSound();
+        renderAdminDashboard();
+        return servedUser;
+    }
+    
+    alert(`No students currently waiting for ${serviceName}.`);
+    return null;
+}
+
+/* =========================================================
+   9. REAL-TIME STORAGE & SYNC ENGINE
+   ========================================================= */
+
+window.addEventListener("storage", () => {
+    const activeService = localStorage.getItem("activeService");
+
+    if (currentStudent === "admin") {
+        renderAdminDashboard();
+        return;
+    }
+
+    if (activeService && document.getElementById("queuePage").style.display !== "none") {
+        const serviceQueues = Storage.get("serviceQueues", {});
+        const currentQueue = serviceQueues[activeService] || [];
+
+        if (!currentQueue.includes(currentStudent)) {
+            playCallSound();
+            alert("It's your turn! Please proceed to the department counter.");
+            Storage.remove("activeService");
+            showView("dashboard");
+        } else {
             chooseService(activeService);
         }
     }
 });
 
 /* =========================================================
-   8. DEMO HELPER (SERVE QUEUE TICKET VIA CONSOLE)
+   10. UTILITY HELPERS
    ========================================================= */
 
-function serveNextStudent(serviceName) {
-    const serviceQueues = JSON.parse(localStorage.getItem("serviceQueues"));
-    if (serviceQueues[serviceName] && serviceQueues[serviceName].length > 0) {
-        const servedUser = serviceQueues[serviceName].shift();
-        localStorage.setItem("serviceQueues", JSON.stringify(serviceQueues));
-        console.log("Served student:", servedUser);
-    }
+function showStatusMessage(element, message, isSuccess) {
+    if (!element) return;
+    element.textContent = message;
+    element.style.color = isSuccess ? "#10b981" : "#ef4444";
+    element.style.display = "block";
 }
-
-/* =========================================================
-   9. UTILITIES
-   ========================================================= */
-
-document.getElementById("resetPassword").addEventListener("click", function (event) {
-    event.preventDefault();
-    alert("Demo Password Reset: Default accounts are 'student1' / 'password123' and 'admin' / 'admin123'.");
-});

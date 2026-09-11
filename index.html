@@ -3,574 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CampusQueue | Student Portal</title>
+    <title>CampusQueue | Student & Staff Portal</title>
     
-    <style>
-        /* =========================================================
-           1. CORE DESIGN SYSTEM & VARIABLES
-           ========================================================= */
-        :root {
-            --primary-navy: #0b1e36;
-            --primary-accent: #0072ff;
-            --primary-accent-hover: #005bb5;
-            --gold-accent: #f5b000;
-            --bg-light: #f4f7fa;
-            --card-bg: #ffffff;
-            --text-dark: #1e293b;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 20px 30px -10px rgba(0, 0, 0, 0.15);
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 20px;
-            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-smooth: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-        }
-
-        body {
-            min-height: 100vh;
-            background-color: var(--bg-light);
-            color: var(--text-dark);
-            overflow-x: hidden;
-        }
-
-        /* =========================================================
-           2. ANIMATIONS (KEYFRAMES)
-           ========================================================= */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes floatLogo {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-6px); }
-        }
-
-        @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 15px rgba(0, 114, 255, 0.2); }
-            50% { box-shadow: 0 0 25px rgba(0, 114, 255, 0.4); }
-        }
-
-        .animate-fade-in {
-            animation: fadeIn var(--transition-smooth) forwards;
-        }
-
-        /* =========================================================
-           3. LOGIN PAGE UI & GLASSMORPHISM
-           ========================================================= */
-        #loginPage {
-            min-height: 100vh;
-            background: linear-gradient(135deg, rgba(11, 30, 54, 0.88), rgba(13, 71, 120, 0.82)),
-                        url("background-campus.png");
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            padding: 20px;
-        }
-
-        .brand {
-            text-align: center;
-            color: white;
-            z-index: 2;
-            margin-bottom: 25px;
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        .brand-logo {
-            font-size: clamp(54px, 7vw, 96px);
-            font-weight: 900;
-            letter-spacing: 3px;
-            color: var(--gold-accent);
-            line-height: 1;
-            text-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            display: inline-block;
-            animation: floatLogo 4s ease-in-out infinite;
-        }
-
-        .brand h1 {
-            font-size: clamp(13px, 1.6vw, 22px);
-            letter-spacing: 1.5px;
-            font-weight: 600;
-            text-transform: uppercase;
-            opacity: 0.95;
-            margin-top: 8px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
-        }
-
-        .login-box {
-            width: 100%;
-            max-width: 420px;
-            background: rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: var(--radius-lg);
-            padding: 40px 32px;
-            color: white;
-            box-shadow: var(--shadow-lg);
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        .login-box h2 {
-            text-align: center;
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 24px;
-            letter-spacing: 0.5px;
-        }
-
-        .input-group {
-            margin-bottom: 18px;
-        }
-
-        .input-group input {
-            width: 100%;
-            height: 46px;
-            padding: 0 16px;
-            background: rgba(0, 0, 0, 0.25);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            color: white;
-            font-size: 15px;
-            border-radius: var(--radius-sm);
-            transition: var(--transition-fast);
-        }
-
-        .input-group input::placeholder {
-            color: rgba(255, 255, 255, 0.65);
-        }
-
-        .input-group input:focus {
-            outline: none;
-            border-color: var(--primary-accent);
-            background: rgba(0, 0, 0, 0.4);
-            box-shadow: 0 0 0 3px rgba(0, 114, 255, 0.3);
-        }
-
-        .login-options {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-        }
-
-        .remember {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.85);
-            cursor: pointer;
-        }
-
-        .login-btn {
-            background: var(--primary-accent);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 15px;
-            font-weight: 600;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: var(--transition-fast);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .login-btn:hover {
-            background: var(--primary-accent-hover);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .login-btn:active {
-            transform: translateY(0);
-        }
-
-        .forgot {
-            margin-top: 28px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.15);
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.8);
-            line-height: 1.6;
-        }
-
-        .forgot a {
-            color: #60a5fa;
-            text-decoration: none;
-            font-weight: 500;
-            transition: var(--transition-fast);
-        }
-
-        .forgot a:hover {
-            color: #93c5fd;
-            text-decoration: underline;
-        }
-
-        .login-footer {
-            color: rgba(255, 255, 255, 0.75);
-            text-align: center;
-            font-size: 13px;
-            margin-top: 25px;
-        }
-
-        .login-footer select {
-            background: rgba(0, 0, 0, 0.3);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 4px 8px;
-            border-radius: 4px;
-            margin-left: 6px;
-        }
-
-        /* =========================================================
-           4. DASHBOARD UI
-           ========================================================= */
-        #dashboard {
-            min-height: 100vh;
-            background: var(--bg-light);
-            animation: fadeIn 0.4s ease-out;
-        }
-
-        .dashboard-header {
-            background: var(--primary-navy);
-            color: white;
-            padding: 18px 40px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: var(--shadow-md);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .dashboard-header h2 {
-            font-size: 22px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            color: white;
-        }
-
-        .welcome-user {
-            font-size: 14px;
-            color: #cbd5e1;
-        }
-
-        .welcome-user strong {
-            color: var(--gold-accent);
-        }
-
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.12);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 8px 18px;
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition-fast);
-        }
-
-        .logout-btn:hover {
-            background: #ef4444;
-            border-color: #ef4444;
-            transform: translateY(-1px);
-        }
-
-        .dashboard-content {
-            max-width: 1200px;
-            margin: auto;
-            padding: 50px 24px;
-        }
-
-        .dashboard-title h1 {
-            color: var(--primary-navy);
-            font-size: 32px;
-            font-weight: 800;
-            margin-bottom: 6px;
-        }
-
-        .dashboard-title p {
-            color: var(--text-muted);
-            font-size: 16px;
-            margin-bottom: 36px;
-        }
-
-        .services {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-            gap: 24px;
-        }
-
-        .service-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 32px 24px;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            box-shadow: var(--shadow-sm);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .service-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: var(--primary-accent);
-            opacity: 0;
-            transition: var(--transition-fast);
-        }
-
-        .service-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-lg);
-            border-color: rgba(0, 114, 255, 0.3);
-        }
-
-        .service-card:hover::before {
-            opacity: 1;
-        }
-
-        .service-icon {
-            font-size: 44px;
-            margin-bottom: 16px;
-            display: inline-block;
-            transition: var(--transition-smooth);
-        }
-
-        .service-card:hover .service-icon {
-            transform: scale(1.15) rotate(4deg);
-        }
-
-        .service-card h3 {
-            color: var(--primary-navy);
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .service-card p {
-            color: var(--text-muted);
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        /* =========================================================
-           5. QUEUE TICKET PAGE UI
-           ========================================================= */
-        #queuePage {
-            min-height: 100vh;
-            background: var(--bg-light);
-            padding: 60px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.4s ease-out;
-        }
-
-        .queue-card {
-            width: 100%;
-            max-width: 520px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 44px 36px;
-            text-align: center;
-            box-shadow: var(--shadow-lg);
-            position: relative;
-            animation: pulseGlow 4s infinite;
-        }
-
-        .queue-card h2 {
-            color: var(--primary-navy);
-            font-size: 26px;
-            font-weight: 800;
-            margin-bottom: 6px;
-        }
-
-        .queue-card > p {
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-
-        .queue-number {
-            font-size: 80px;
-            font-weight: 900;
-            color: var(--primary-accent);
-            margin: 15px 0;
-            letter-spacing: -2px;
-            line-height: 1;
-        }
-
-        .queue-details {
-            background: var(--bg-light);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 20px;
-            margin: 24px 0;
-            text-align: left;
-        }
-
-        .queue-details p {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            font-size: 15px;
-            color: var(--text-dark);
-            border-bottom: 1px dashed var(--border-color);
-        }
-
-        .queue-details p:last-child {
-            border-bottom: none;
-        }
-
-        .queue-details strong {
-            color: var(--primary-navy);
-        }
-
-        .back-btn {
-            background: var(--primary-navy);
-            color: white;
-            border: none;
-            padding: 12px 28px;
-            font-size: 15px;
-            font-weight: 600;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: var(--transition-fast);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .back-btn:hover {
-            background: var(--primary-accent);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        /* RESPONSIVE LAYOUT */
-        @media (max-width: 640px) {
-            .dashboard-header { padding: 15px 20px; }
-            .welcome-user { display: none; }
-            .dashboard-content { padding: 30px 16px; }
-            .queue-card { padding: 30px 20px; }
-            .queue-number { font-size: 64px; }
-        }
-    </style>
+    <!-- Link External CSS -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<!-- =========================================================
-   LOGIN PAGE
-========================================================= -->
+<!-- LOGIN PAGE -->
 <section id="loginPage">
-
     <div class="brand">
         <div class="brand-logo">USTP</div>
-        <h1>UNIVERSITY OF SCIENCE AND TECHNOLOGY OF SOUTHERN PHILIPPINES</h1>
+        <h1>University of Science and Technology of Southern Philippines</h1>
     </div>
 
     <div class="login-box">
-
-        <!-- LOGIN FORM -->
+        <!-- Login Section -->
         <div id="loginSection">
             <h2>Portal Access</h2>
             <form id="loginForm" novalidate>
                 <div class="input-group">
-                    <input type="text" id="username" placeholder="Username" autocomplete="username" required>
+                    <label for="username" class="sr-only">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Username" autocomplete="username" required>
                 </div>
                 <div class="input-group">
-                    <input type="password" id="password" placeholder="Password" autocomplete="current-password" required>
+                    <label for="password" class="sr-only">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Password" autocomplete="current-password" required>
                 </div>
                 <div class="login-options">
                     <label class="remember">
                         <input type="checkbox" id="rememberMe"> Remember Me
                     </label>
-                    <button type="submit" class="login-btn">Login ➜</button>
+                    <button type="submit" class="login-btn">Login &#10140;</button>
                 </div>
-                <p id="loginError" role="alert" style="display:none; color:#f87171; text-align:center; font-size:13px; margin-top:16px;">Please enter your credentials.</p>
+                <p id="loginError" role="alert"></p>
             </form>
 
             <div class="forgot">
-                <p style="text-align:center; margin-bottom: 12px;">
-                    Don't have an account? 
-                    <a href="#" id="showRegisterLink" onclick="toggleAuthMode(event, 'register')">Create account</a>
-                </p>
-                <p style="text-align:center;">
-                    Forgot password? 
-                    <a href="#" id="resetPassword">Reset here</a>
-                </p>
+                <p>Don't have an account? <a href="#" onclick="toggleAuthMode(event, 'register')">Create account</a></p>
+                <p style="margin-top: 6px;">Forgot password? <a href="#" id="resetPassword">Reset here</a></p>
             </div>
         </div>
 
-        <!-- REGISTER FORM -->
-        <div id="registerSection" style="display: none;">
+        <!-- Register Section -->
+        <div id="registerSection" style="display:none;">
             <h2>Create Account</h2>
             <form id="registerForm" novalidate>
                 <div class="input-group">
-                    <input type="text" id="regUsername" placeholder="Choose Username" required>
+                    <label for="regUsername" class="sr-only">Choose Username</label>
+                    <input type="text" id="regUsername" name="regUsername" placeholder="Choose Username" required>
                 </div>
                 <div class="input-group">
-                    <input type="password" id="regPassword" placeholder="Choose Password" required>
+                    <label for="regPassword" class="sr-only">Choose Password</label>
+                    <input type="password" id="regPassword" name="regPassword" placeholder="Choose Password" required>
                 </div>
-                <div class="login-options">
-                    <button type="submit" class="login-btn" style="width: 100%;">Register Account ➜</button>
-                </div>
-                <p id="registerMessage" role="alert" style="display:none; margin-top:15px; text-align:center;"></p>
+                <button type="submit" class="login-btn" style="width: 100%;">Register</button>
+                <p id="registerMessage" role="alert"></p>
             </form>
 
             <div class="forgot">
-                <p style="text-align:center;">
-                    Already registered? 
-                    <a href="#" id="showLoginLink" onclick="toggleAuthMode(event, 'login')">Back to Login</a>
-                </p>
+                <p>Already have an account? <a href="#" onclick="toggleAuthMode(event, 'login')">Sign in</a></p>
             </div>
         </div>
-
     </div>
 
     <div class="login-footer">
-        <p>
-            Language:
-            <select id="language">
-                <option>English</option>
-                <option>Filipino</option>
-            </select>
-        </p>
+        <label for="language">Language:</label>
+        <select id="language">
+            <option>English</option>
+            <option>Filipino</option>
+        </select>
         <p style="margin-top: 8px;">Powered by CampusQueue</p>
     </div>
-
 </section>
 
-<!-- =========================================================
-   DASHBOARD PAGE
-========================================================= -->
+<!-- DASHBOARD PAGE -->
 <section id="dashboard" style="display:none;">
-
     <header class="dashboard-header">
         <h2>CampusQueue</h2>
-        <span class="welcome-user">Welcome, <strong id="displayUsername"></strong></span>
+        <span class="welcome-user">Welcome, <strong id="displayUsername">Student</strong></span>
         <button class="logout-btn" onclick="logout()">Logout</button>
     </header>
 
@@ -581,45 +92,35 @@
         </div>
 
         <div class="services">
-            <div class="service-card" onclick="chooseService('Registrar')">
-                <div class="service-icon">📋</div>
+            <article class="service-card" onclick="chooseService('Registrar')">
+                <div class="service-icon" aria-hidden="true">📋</div>
                 <h3>Registrar</h3>
                 <p>Academic records, transcript requests, enrollment, and certifications.</p>
-            </div>
+            </article>
 
-            <div class="service-card" onclick="chooseService('Cashier')">
-                <div class="service-icon">💳</div>
+            <article class="service-card" onclick="chooseService('Cashier')">
+                <div class="service-icon" aria-hidden="true">💳</div>
                 <h3>Cashier</h3>
                 <p>Tuition payments, fee balances, and financial clearance.</p>
-            </div>
+            </article>
 
-            <div class="service-card" onclick="chooseService('Clinic')">
-                <div class="service-icon">🏥</div>
+            <article class="service-card" onclick="chooseService('Clinic')">
+                <div class="service-icon" aria-hidden="true">🏥</div>
                 <h3>Clinic</h3>
                 <p>Student health consultations, medical clearance, and first aid.</p>
-            </div>
+            </article>
 
-            <div class="service-card" onclick="chooseService('Library')">
-                <div class="service-icon">📚</div>
+            <article class="service-card" onclick="chooseService('Library')">
+                <div class="service-icon" aria-hidden="true">📚</div>
                 <h3>Library</h3>
                 <p>Book borrowing, study desk reservations, and research assistance.</p>
-            </div>
-
-            <div class="service-card" onclick="chooseService('Student Services')">
-                <div class="service-icon">🎓</div>
-                <h3>Student Affairs</h3>
-                <p>Student organization affairs, scholarships, and guidance counselors.</p>
-            </div>
+            </article>
         </div>
     </main>
-
 </section>
 
-<!-- =========================================================
-   QUEUE TICKET PAGE
-========================================================= -->
+<!-- QUEUE TICKET PAGE -->
 <section id="queuePage" style="display:none;">
-
     <div class="queue-card">
         <h2>Active Ticket</h2>
         <p>Please present this queue ticket when called</p>
@@ -627,17 +128,39 @@
         <div class="queue-number" id="queueNumber">01</div>
 
         <div class="queue-details">
-            <p><strong>Student ID / User:</strong> <span id="queueStudent"></span></p>
-            <p><strong>Service Department:</strong> <span id="queueService"></span></p>
-            <p><strong>Students Ahead:</strong> <span id="queuePeople"></span></p>
+            <p><strong>Student ID / User:</strong> <span id="queueStudent">student1</span></p>
+            <p><strong>Service Department:</strong> <span id="queueService">Registrar</span></p>
+            <p><strong>Students Ahead:</strong> <span id="queuePeople">0</span></p>
             <p><strong>Est. Wait Time:</strong> <span><span id="queueWaitTime">0</span> mins</span></p>
         </div>
 
-        <button class="back-btn" onclick="backToServices()">← Back to Dashboard</button>
+        <div class="queue-actions">
+            <button class="back-btn" onclick="backToServices()">&#8592; Dashboard</button>
+            <button id="cancelQueueBtn" class="cancel-btn">Leave Queue</button>
+        </div>
     </div>
-
 </section>
 
-<script src="./script.js"></script>
+<!-- STAFF ADMIN PANEL -->
+<section id="adminPage" style="display:none;">
+    <header class="dashboard-header">
+        <h2>CampusQueue | Staff Admin</h2>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </header>
+
+    <main class="dashboard-content">
+        <div class="dashboard-title">
+            <h1>Department Operations</h1>
+            <p>Manage active student queues and call tickets in real time.</p>
+        </div>
+
+        <div id="adminQueueList" class="admin-grid">
+            <!-- Dynamic Queue Cards Render Here -->
+        </div>
+    </main>
+</section>
+
+<!-- Link External JavaScript -->
+<script src="script.js"></script>
 </body>
 </html>
