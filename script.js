@@ -34,6 +34,7 @@ function initDatabase() {
     if (!localStorage.getItem("users")) {
         Storage.set("users", {
             "student1": "password123",
+            "student2": "password123",
             "admin": "admin123"
         });
     }
@@ -44,6 +45,15 @@ function initDatabase() {
             "Cashier": [],
             "Clinic": [],
             "Library": []
+        });
+    }
+
+    if (!localStorage.getItem("activeServing")) {
+        Storage.set("activeServing", {
+            "Registrar": null,
+            "Cashier": null,
+            "Clinic": null,
+            "Library": null
         });
     }
 
@@ -152,7 +162,7 @@ function bindEvents() {
     if (resetPassword) {
         resetPassword.addEventListener("click", (e) => {
             e.preventDefault();
-            alert("Demo Password Reset: Default accounts are 'student1' / 'password123' and 'admin' / 'admin123'.");
+            alert("Demo Accounts: 'student1' / 'password123' and 'admin' / 'admin123'.");
         });
     }
 }
@@ -262,7 +272,7 @@ function logout() {
 }
 
 /* =========================================================
-   7. STUDENT QUEUE LOGIC (CHOOSE / LEAVE / MISSED)
+   7. STUDENT QUEUE LOGIC
    ========================================================= */
 
 function checkMissedStatus() {
@@ -272,15 +282,27 @@ function checkMissedStatus() {
         delete missedTickets[currentStudent];
         Storage.set("missedTickets", missedTickets);
 
-        alert(`⚠️ Attention: You missed your turn at the ${missedService} counter! Your ticket was cancelled. To be fair to other students, please select the service again to get a new queue ticket.`);
+        alert(`⚠️ Attention: You missed your turn at the ${missedService} counter! Your ticket was cancelled. Please select the service again to get a new queue ticket.`);
     }
 }
 
 function chooseService(serviceName) {
     const serviceQueues = Storage.get("serviceQueues", {});
+    const activeServing = Storage.get("activeServing", {});
 
     if (!serviceQueues[serviceName]) {
         serviceQueues[serviceName] = [];
+    }
+
+    // Display state if user is currently at the counter
+    if (activeServing[serviceName] === currentStudent) {
+        document.getElementById("queueStudent").textContent = currentStudent;
+        document.getElementById("queueService").textContent = serviceName;
+        document.getElementById("queuePeople").textContent = "0 (SERVED)";
+        document.getElementById("queueWaitTime").textContent = "0";
+        document.getElementById("queueNumber").textContent = "NOW AT COUNTER";
+        showView("queuePage");
+        return;
     }
 
     const currentQueue = serviceQueues[serviceName];
@@ -328,7 +350,7 @@ function backToServices() {
 }
 
 /* =========================================================
-   8. STAFF ADMIN PANEL CONTROLLER
+   8. ADMIN PANEL WITH CLICKABLE QUEUE SELECTION
    ========================================================= */
 
 function renderAdminDashboard() {
@@ -336,55 +358,105 @@ function renderAdminDashboard() {
     if (!adminContainer) return;
 
     const serviceQueues = Storage.get("serviceQueues", {});
+    const activeServing = Storage.get("activeServing", {});
     adminContainer.innerHTML = "";
 
     Object.keys(serviceQueues).forEach(service => {
         const queue = serviceQueues[service];
-        const nextUser = queue[0] || "None";
+        const currentlyServing = activeServing[service] || "None";
+
+        // Build list HTML for people waiting in line
+        let queueItemsHtml = "";
+        if (queue.length > 0) {
+            queue.forEach((student, idx) => {
+                queueItemsHtml += `
+                    <div class="queue-item" onclick="callSpecificStudent('${service}', '${student}')" title="Click to call ${student}">
+                        <span><strong>#${idx + 1}</strong> - ${student}</span>
+                        <span class="ticket-tag">Call Ticket &#10140;</span>
+                    </div>
+                `;
+            });
+        } else {
+            queueItemsHtml = `<div class="empty-queue">No students waiting in line</div>`;
+        }
 
         const card = document.createElement("div");
         card.className = "admin-service-card";
         card.innerHTML = `
-            <h3>${service}</h3>
-            <p><strong>In Queue:</strong> ${queue.length} students</p>
-            <p><strong>Next in Line:</strong> ${nextUser}</p>
+            <h3>${service} Counter</h3>
+            <p style="margin-bottom: 8px;"><strong>Now Serving:</strong> <span class="serving-badge">${currentlyServing}</span></p>
+
+            <div class="queue-list-box">
+                <label>Waiting Queue (${queue.length}) - Click to call</label>
+                <div class="queue-items">
+                    ${queueItemsHtml}
+                </div>
+            </div>
+            
             <div class="admin-actions">
-                <button class="btn-serve" onclick="serveNextStudent('${service}')">Call Next Student</button>
-                <button class="btn-missed" onclick="markStudentMissed('${service}')" ${queue.length === 0 ? "disabled" : ""}>Mark No-Show</button>
+                <button class="btn-serve" onclick="completeAndNext('${service}')" ${queue.length === 0 && currentlyServing === "None" ? "disabled" : ""}>
+                    ${currentlyServing === "None" ? "Call First in Line" : "Complete & Call Next"}
+                </button>
+                <button class="btn-missed" onclick="markStudentMissed('${service}')" ${currentlyServing === "None" ? "disabled" : ""}>
+                    Mark No-Show
+                </button>
             </div>
         `;
         adminContainer.appendChild(card);
     });
 }
 
-function serveNextStudent(serviceName) {
+function callSpecificStudent(serviceName, username) {
     const serviceQueues = Storage.get("serviceQueues", {});
+    const activeServing = Storage.get("activeServing", {});
 
-    if (serviceQueues[serviceName] && serviceQueues[serviceName].length > 0) {
-        const servedUser = serviceQueues[serviceName].shift();
+    // Remove selected student from waiting queue and place at counter
+    if (serviceQueues[serviceName]) {
+        serviceQueues[serviceName] = serviceQueues[serviceName].filter(user => user !== username);
+        activeServing[serviceName] = username;
+
         Storage.set("serviceQueues", serviceQueues);
+        Storage.set("activeServing", activeServing);
+
         playCallSound();
         renderAdminDashboard();
-        return servedUser;
     }
-    
-    alert(`No students currently waiting for ${serviceName}.`);
-    return null;
+}
+
+function completeAndNext(serviceName) {
+    const serviceQueues = Storage.get("serviceQueues", {});
+    const activeServing = Storage.get("activeServing", {});
+
+    if (serviceQueues[serviceName] && serviceQueues[serviceName].length > 0) {
+        const nextUser = serviceQueues[serviceName].shift();
+        activeServing[serviceName] = nextUser;
+        
+        Storage.set("serviceQueues", serviceQueues);
+        Storage.set("activeServing", activeServing);
+        
+        playCallSound();
+        renderAdminDashboard();
+    } else {
+        activeServing[serviceName] = "None";
+        Storage.set("activeServing", activeServing);
+        renderAdminDashboard();
+        alert(`Queue cleared for ${serviceName}.`);
+    }
 }
 
 function markStudentMissed(serviceName) {
-    const serviceQueues = Storage.get("serviceQueues", {});
+    const activeServing = Storage.get("activeServing", {});
+    const missedUser = activeServing[serviceName];
 
-    if (serviceQueues[serviceName] && serviceQueues[serviceName].length > 0) {
-        const missedUser = serviceQueues[serviceName].shift();
-        
+    if (missedUser && missedUser !== "None") {
         const missedTickets = Storage.get("missedTickets", {});
         missedTickets[missedUser] = serviceName;
         Storage.set("missedTickets", missedTickets);
 
-        Storage.set("serviceQueues", serviceQueues);
-        renderAdminDashboard();
-        alert(`Marked ${missedUser} as No-Show. They will be prompted to re-queue next time they log in.`);
+        activeServing[serviceName] = "None";
+        Storage.set("activeServing", activeServing);
+        
+        completeAndNext(serviceName);
     }
 }
 
@@ -401,9 +473,8 @@ window.addEventListener("storage", () => {
     }
 
     if (activeService) {
-        const serviceQueues = Storage.get("serviceQueues", {});
+        const activeServing = Storage.get("activeServing", {});
         const missedTickets = Storage.get("missedTickets", {});
-        const currentQueue = serviceQueues[activeService] || [];
 
         if (missedTickets[currentStudent]) {
             Storage.remove("activeService");
@@ -412,15 +483,14 @@ window.addEventListener("storage", () => {
             return;
         }
 
+        if (activeServing[activeService] === currentStudent) {
+            playCallSound();
+            chooseService(activeService);
+            return;
+        }
+
         if (document.getElementById("queuePage").style.display !== "none") {
-            if (!currentQueue.includes(currentStudent)) {
-                playCallSound();
-                alert("It's your turn! Please proceed to the department counter.");
-                Storage.remove("activeService");
-                showView("dashboard");
-            } else {
-                chooseService(activeService);
-            }
+            chooseService(activeService);
         }
     }
 });

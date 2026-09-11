@@ -60,7 +60,7 @@ body {
 }
 
 /* =========================================================
-   2. LOGIN PAGE (BACKGROUND WITH LOCAL IMAGE)
+   2. LOGIN PAGE
    ========================================================= */
 #loginPage {
     min-height: 100vh;
@@ -353,7 +353,7 @@ body {
 }
 
 .queue-number {
-    font-size: 80px;
+    font-size: 72px;
     font-weight: 900;
     color: var(--primary-accent);
     margin: 15px 0;
@@ -426,11 +426,11 @@ body {
 }
 
 /* =========================================================
-   5. STAFF ADMIN PANEL & NO-SHOW BUTTONS
+   5. STAFF ADMIN PANEL WITH INTERACTIVE PERSON SELECTION
    ========================================================= */
 .admin-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 24px;
     margin-top: 24px;
 }
@@ -441,6 +441,9 @@ body {
     border-radius: var(--radius-md);
     padding: 24px;
     box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .admin-service-card h3 {
@@ -451,20 +454,80 @@ body {
     padding-bottom: 8px;
 }
 
-.admin-service-card p {
-    font-size: 14px;
+.serving-badge {
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+/* Interactive Person Queue List */
+.queue-list-box {
+    margin: 16px 0;
+    background: var(--bg-light);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+.queue-list-box label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
     color: var(--text-muted);
+    letter-spacing: 0.5px;
+    display: block;
     margin-bottom: 8px;
 }
 
-.admin-service-card p strong {
-    color: var(--text-dark);
+.queue-items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.queue-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 14px;
+    transition: var(--transition-fast);
+}
+
+.queue-item:hover {
+    border-color: var(--primary-accent);
+    background: #f0f7ff;
+    transform: translateX(3px);
+}
+
+.queue-item span.ticket-tag {
+    background: var(--primary-navy);
+    color: white;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+
+.empty-queue {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 12px 0;
 }
 
 .admin-actions {
     display: flex;
     gap: 10px;
-    margin-top: 16px;
+    margin-top: 12px;
 }
 
 .admin-service-card button {
@@ -482,8 +545,14 @@ body {
     border: none;
 }
 
-.btn-serve:hover {
+.btn-serve:hover:not(:disabled) {
     background: var(--primary-accent-hover);
+}
+
+.btn-serve:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--text-muted);
 }
 
 .btn-missed {
