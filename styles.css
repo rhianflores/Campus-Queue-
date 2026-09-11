@@ -60,11 +60,10 @@ body {
 }
 
 /* =========================================================
-   2. LOGIN PAGE (BACKGROUND WITH FALLBACK GRADIENT)
+   2. LOGIN PAGE (BACKGROUND WITH LOCAL IMAGE)
    ========================================================= */
 #loginPage {
     min-height: 100vh;
-    /* Uses background.jpg if present, falls back gracefully to standard gradient */
     background: linear-gradient(135deg, rgba(11, 30, 54, 0.85), rgba(13, 71, 120, 0.85)),
                 url("background.jpg") center/cover no-repeat fixed,
                 linear-gradient(135deg, #0b1e36 0%, #0d4778 50%, #0072ff 100%);
@@ -427,7 +426,7 @@ body {
 }
 
 /* =========================================================
-   5. STAFF ADMIN PANEL
+   5. STAFF ADMIN PANEL & NO-SHOW BUTTONS
    ========================================================= */
 .admin-grid {
     display: grid;
@@ -462,21 +461,47 @@ body {
     color: var(--text-dark);
 }
 
-.admin-service-card button {
-    width: 100%;
+.admin-actions {
+    display: flex;
+    gap: 10px;
     margin-top: 16px;
-    background: var(--primary-accent);
-    color: white;
-    border: none;
-    padding: 10px;
+}
+
+.admin-service-card button {
+    flex: 1;
     border-radius: var(--radius-sm);
     font-weight: 600;
+    padding: 10px;
     cursor: pointer;
     transition: var(--transition-fast);
 }
 
-.admin-service-card button:hover {
+.btn-serve {
+    background: var(--primary-accent);
+    color: white;
+    border: none;
+}
+
+.btn-serve:hover {
     background: var(--primary-accent-hover);
+}
+
+.btn-missed {
+    background: transparent;
+    color: var(--danger-red);
+    border: 1px solid var(--danger-red);
+}
+
+.btn-missed:hover:not(:disabled) {
+    background: var(--danger-red);
+    color: white;
+}
+
+.btn-missed:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: var(--border-color);
+    color: var(--text-muted);
 }
 
 @media (max-width: 640px) {
@@ -485,4 +510,5 @@ body {
     .dashboard-content { padding: 30px 16px; }
     .queue-card { padding: 30px 20px; }
     .queue-actions { flex-direction: column; }
+    .admin-actions { flex-direction: column; }
 }

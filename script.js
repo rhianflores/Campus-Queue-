@@ -46,6 +46,10 @@ function initDatabase() {
             "Library": []
         });
     }
+
+    if (!localStorage.getItem("missedTickets")) {
+        Storage.set("missedTickets", {});
+    }
 }
 
 initDatabase();
@@ -129,6 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
             chooseService(activeService);
         } else {
             showView("dashboard");
+            checkMissedStatus();
         }
     } else {
         showView("loginPage");
@@ -201,6 +206,7 @@ function handleLogin(event) {
             renderAdminDashboard();
         } else {
             showView("dashboard");
+            checkMissedStatus();
         }
     } else {
         showStatusMessage(loginError, "Invalid username or password!", false);
@@ -256,8 +262,19 @@ function logout() {
 }
 
 /* =========================================================
-   7. STUDENT QUEUE LOGIC (CHOOSE / LEAVE QUEUE)
+   7. STUDENT QUEUE LOGIC (CHOOSE / LEAVE / MISSED)
    ========================================================= */
+
+function checkMissedStatus() {
+    const missedTickets = Storage.get("missedTickets", {});
+    if (missedTickets[currentStudent]) {
+        const missedService = missedTickets[currentStudent];
+        delete missedTickets[currentStudent];
+        Storage.set("missedTickets", missedTickets);
+
+        alert(`⚠️ Attention: You missed your turn at the ${missedService} counter! Your ticket was cancelled. To be fair to other students, please select the service again to get a new queue ticket.`);
+    }
+}
 
 function chooseService(serviceName) {
     const serviceQueues = Storage.get("serviceQueues", {});
@@ -331,7 +348,10 @@ function renderAdminDashboard() {
             <h3>${service}</h3>
             <p><strong>In Queue:</strong> ${queue.length} students</p>
             <p><strong>Next in Line:</strong> ${nextUser}</p>
-            <button onclick="serveNextStudent('${service}')">Call Next Student</button>
+            <div class="admin-actions">
+                <button class="btn-serve" onclick="serveNextStudent('${service}')">Call Next Student</button>
+                <button class="btn-missed" onclick="markStudentMissed('${service}')" ${queue.length === 0 ? "disabled" : ""}>Mark No-Show</button>
+            </div>
         `;
         adminContainer.appendChild(card);
     });
@@ -352,6 +372,22 @@ function serveNextStudent(serviceName) {
     return null;
 }
 
+function markStudentMissed(serviceName) {
+    const serviceQueues = Storage.get("serviceQueues", {});
+
+    if (serviceQueues[serviceName] && serviceQueues[serviceName].length > 0) {
+        const missedUser = serviceQueues[serviceName].shift();
+        
+        const missedTickets = Storage.get("missedTickets", {});
+        missedTickets[missedUser] = serviceName;
+        Storage.set("missedTickets", missedTickets);
+
+        Storage.set("serviceQueues", serviceQueues);
+        renderAdminDashboard();
+        alert(`Marked ${missedUser} as No-Show. They will be prompted to re-queue next time they log in.`);
+    }
+}
+
 /* =========================================================
    9. REAL-TIME STORAGE & SYNC ENGINE
    ========================================================= */
@@ -364,17 +400,27 @@ window.addEventListener("storage", () => {
         return;
     }
 
-    if (activeService && document.getElementById("queuePage").style.display !== "none") {
+    if (activeService) {
         const serviceQueues = Storage.get("serviceQueues", {});
+        const missedTickets = Storage.get("missedTickets", {});
         const currentQueue = serviceQueues[activeService] || [];
 
-        if (!currentQueue.includes(currentStudent)) {
-            playCallSound();
-            alert("It's your turn! Please proceed to the department counter.");
+        if (missedTickets[currentStudent]) {
             Storage.remove("activeService");
             showView("dashboard");
-        } else {
-            chooseService(activeService);
+            checkMissedStatus();
+            return;
+        }
+
+        if (document.getElementById("queuePage").style.display !== "none") {
+            if (!currentQueue.includes(currentStudent)) {
+                playCallSound();
+                alert("It's your turn! Please proceed to the department counter.");
+                Storage.remove("activeService");
+                showView("dashboard");
+            } else {
+                chooseService(activeService);
+            }
         }
     }
 });
