@@ -32,15 +32,42 @@ document
     // Display username
     document.getElementById("displayUsername").textContent = currentStudent;
 
-    // Hide login
-    document.getElementById("loginPage").style.display = "none";
-
-    // Show dashboard
-    document.getElementById("dashboard").style.display = "block";
-
     // Hide error
     document.getElementById("loginError").style.display = "none";
+
+    // Hide login, play loader, then show dashboard
+    playSectionTransition("loginPage", "dashboard", "block");
   });
+
+/* ================================================
+   SECTION TRANSITION LOADER
+   Plays the constellation draw-in animation while
+   switching between Dashboard and Queue.
+================================================= */
+
+const LOADER_DURATION = 2100; // ms, matches the SVG draw-in timing
+
+function playSectionTransition(hideIds, showId, showDisplay) {
+  const loader = document.getElementById("sectionLoader");
+
+  // Allow a single id or an array of ids to hide
+  const idsToHide = Array.isArray(hideIds) ? hideIds : [hideIds];
+
+  idsToHide.forEach(function (id) {
+    document.getElementById(id).style.display = "none";
+  });
+
+  // Reset display first so the browser treats this as a fresh
+  // element (this restarts the CSS draw-in animations every time)
+  loader.style.display = "none";
+  void loader.offsetWidth; // force reflow
+  loader.style.display = "flex";
+
+  setTimeout(function () {
+    loader.style.display = "none";
+    document.getElementById(showId).style.display = showDisplay || "block";
+  }, LOADER_DURATION);
+}
 
 /* ================================================
    CHOOSE SERVICE
@@ -83,13 +110,9 @@ function chooseService(service) {
     queueNumber,
   ).padStart(2, "0");
 
-  // Hide dashboard
+  // Hide dashboard, play loader, then show queue page
 
-  document.getElementById("dashboard").style.display = "none";
-
-  // Show queue page
-
-  document.getElementById("queuePage").style.display = "block";
+  playSectionTransition("dashboard", "queuePage");
 }
 
 /* ================================================
@@ -97,9 +120,7 @@ function chooseService(service) {
 ================================================= */
 
 function backToServices() {
-  document.getElementById("queuePage").style.display = "none";
-
-  document.getElementById("dashboard").style.display = "block";
+  playSectionTransition("queuePage", "dashboard");
 }
 
 /* ================================================
@@ -121,17 +142,10 @@ function logout() {
 
   document.getElementById("loginError").style.display = "none";
 
-  // Hide dashboard
+  // Hide dashboard/queue page, play loader, then return to login
+  // (loginPage needs "flex" display, since it's a centered layout)
 
-  document.getElementById("dashboard").style.display = "none";
-
-  // Hide queue page
-
-  document.getElementById("queuePage").style.display = "none";
-
-  // Return to login
-
-  document.getElementById("loginPage").style.display = "flex";
+  playSectionTransition(["dashboard", "queuePage"], "loginPage", "flex");
 }
 
 /* ================================================
