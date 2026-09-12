@@ -323,6 +323,25 @@ body {
     font-size: 13px;
 }
 
+.service-card .service-queue-info {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.service-card .service-queue-info.is-open {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.service-card .service-queue-info.is-unavailable {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
 /* =========================================================
    4. QUEUE TICKET PAGE
    ========================================================= */
@@ -460,6 +479,46 @@ body {
     padding: 4px 10px;
     border-radius: 6px;
     font-weight: 700;
+}
+
+.no-show-timer {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.no-show-timer span {
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fdba74;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 800;
+}
+
+.service-status-control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 8px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary-navy);
+}
+
+.service-status-control select {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 6px 8px;
+    background: white;
+    color: var(--text-dark);
+    font: inherit;
+    cursor: pointer;
 }
 
 /* Interactive Person Queue List */

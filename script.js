@@ -60,11 +60,21 @@ function initDatabase() {
     if (!localStorage.getItem("missedTickets")) {
         Storage.set("missedTickets", {});
     }
+
+    if (!localStorage.getItem("serviceDeadlines")) {
+        Storage.set("serviceDeadlines", { "Registrar": null, "Cashier": null, "Clinic": null, "Library": null });
+    }
+
+    if (!localStorage.getItem("serviceStatuses")) {
+        Storage.set("serviceStatuses", { "Registrar": "Open", "Cashier": "Open", "Clinic": "Open", "Library": "Open" });
+    }
 }
 
 initDatabase();
 
 let currentStudent = localStorage.getItem("loggedInUser") || "";
+const NO_SHOW_TIMEOUT_MS = 5 * 60 * 1000;
+let adminTimerInterval = null;
 
 /* =========================================================
    3. AUDIO ALERT SYSTEM (WEB AUDIO API)
@@ -139,11 +149,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (currentStudent === "admin") {
             showView("adminPage");
             renderAdminDashboard();
+            startAdminTimer();
         } else if (activeService) {
             chooseService(activeService);
         } else {
             showView("dashboard");
             checkMissedStatus();
+            updateServiceCards();
         }
     } else {
         showView("loginPage");
@@ -214,9 +226,11 @@ function handleLogin(event) {
         if (currentStudent === "admin") {
             showView("adminPage");
             renderAdminDashboard();
+            startAdminTimer();
         } else {
             showView("dashboard");
             checkMissedStatus();
+            updateServiceCards();
         }
     } else {
         showStatusMessage(loginError, "Invalid username or password!", false);
@@ -264,6 +278,7 @@ function logout() {
 
     Storage.remove("loggedInUser");
     Storage.remove("activeService");
+    stopAdminTimer();
 
     const loginError = document.getElementById("loginError");
     if (loginError) loginError.style.display = "none";
@@ -289,6 +304,12 @@ function checkMissedStatus() {
 function chooseService(serviceName) {
     const serviceQueues = Storage.get("serviceQueues", {});
     const activeServing = Storage.get("activeServing", {});
+    const serviceStatuses = Storage.get("serviceStatuses", {});
+
+    if (serviceStatuses[serviceName] && serviceStatuses[serviceName] !== "Open") {
+        alert(`${serviceName} is currently ${serviceStatuses[serviceName].toLowerCase()}. Please select another service or try again later.`);
+        return;
+    }
 
     if (!serviceQueues[serviceName]) {
         serviceQueues[serviceName] = [];
@@ -347,6 +368,24 @@ function cancelQueueTicket() {
 
 function backToServices() {
     showView("dashboard");
+    updateServiceCards();
+}
+
+function updateServiceCards() {
+    const serviceQueues = Storage.get("serviceQueues", {});
+    const serviceStatuses = Storage.get("serviceStatuses", {});
+
+    Object.keys(serviceQueues).forEach(service => {
+        const info = document.getElementById(`serviceInfo-${service}`);
+        if (!info) return;
+
+        const waitingCount = serviceQueues[service].length;
+        const status = serviceStatuses[service] || "Open";
+        info.textContent = status === "Open"
+            ? `${waitingCount} ${waitingCount === 1 ? "student" : "students"} waiting`
+            : `Currently ${status.toLowerCase()}`;
+        info.className = `service-queue-info ${status === "Open" ? "is-open" : "is-unavailable"}`;
+    });
 }
 
 /* =========================================================
@@ -359,11 +398,18 @@ function renderAdminDashboard() {
 
     const serviceQueues = Storage.get("serviceQueues", {});
     const activeServing = Storage.get("activeServing", {});
+    const serviceDeadlines = Storage.get("serviceDeadlines", {});
+    const serviceStatuses = Storage.get("serviceStatuses", {});
     adminContainer.innerHTML = "";
 
     Object.keys(serviceQueues).forEach(service => {
         const queue = serviceQueues[service];
         const currentlyServing = activeServing[service] || "None";
+        const serviceStatus = serviceStatuses[service] || "Open";
+        const remainingTime = getRemainingTime(serviceDeadlines[service]);
+        const timerHtml = currentlyServing !== "None"
+            ? `<p class="no-show-timer"><strong>No-show in:</strong> <span id="timer-${service}">${formatCountdown(remainingTime)}</span></p>`
+            : "";
 
         // Build list HTML for people waiting in line
         let queueItemsHtml = "";
@@ -385,6 +431,15 @@ function renderAdminDashboard() {
         card.innerHTML = `
             <h3>${service} Counter</h3>
             <p style="margin-bottom: 8px;"><strong>Now Serving:</strong> <span class="serving-badge">${currentlyServing}</span></p>
+            ${timerHtml}
+            <div class="service-status-control">
+                <label for="status-${service}">Service status</label>
+                <select id="status-${service}" onchange="updateServiceStatus('${service}', this.value)">
+                    <option value="Open" ${serviceStatus === "Open" ? "selected" : ""}>Open</option>
+                    <option value="Unavailable" ${serviceStatus === "Unavailable" ? "selected" : ""}>Unavailable</option>
+                    <option value="Closed" ${serviceStatus === "Closed" ? "selected" : ""}>Closed</option>
+                </select>
+            </div>
 
             <div class="queue-list-box">
                 <label>Waiting Queue (${queue.length}) - Click to call</label>
@@ -417,6 +472,7 @@ function callSpecificStudent(serviceName, username) {
 
         Storage.set("serviceQueues", serviceQueues);
         Storage.set("activeServing", activeServing);
+        startNoShowTimer(serviceName);
 
         playCallSound();
         renderAdminDashboard();
@@ -433,12 +489,14 @@ function completeAndNext(serviceName) {
         
         Storage.set("serviceQueues", serviceQueues);
         Storage.set("activeServing", activeServing);
+        startNoShowTimer(serviceName);
         
         playCallSound();
         renderAdminDashboard();
     } else {
         activeServing[serviceName] = "None";
         Storage.set("activeServing", activeServing);
+        clearNoShowTimer(serviceName);
         renderAdminDashboard();
         alert(`Queue cleared for ${serviceName}.`);
     }
@@ -455,13 +513,98 @@ function markStudentMissed(serviceName) {
 
         activeServing[serviceName] = "None";
         Storage.set("activeServing", activeServing);
+        clearNoShowTimer(serviceName);
         
         completeAndNext(serviceName);
     }
 }
 
+function updateServiceStatus(serviceName, status) {
+    const serviceStatuses = Storage.get("serviceStatuses", {});
+    serviceStatuses[serviceName] = status;
+    Storage.set("serviceStatuses", serviceStatuses);
+    renderAdminDashboard();
+}
+
 /* =========================================================
-   9. REAL-TIME STORAGE & SYNC ENGINE
+   9. ADMIN NO-SHOW COUNTDOWN
+   ========================================================= */
+
+function startNoShowTimer(serviceName) {
+    const deadlines = Storage.get("serviceDeadlines", {});
+    deadlines[serviceName] = Date.now() + NO_SHOW_TIMEOUT_MS;
+    Storage.set("serviceDeadlines", deadlines);
+}
+
+function clearNoShowTimer(serviceName) {
+    const deadlines = Storage.get("serviceDeadlines", {});
+    deadlines[serviceName] = null;
+    Storage.set("serviceDeadlines", deadlines);
+}
+
+function getRemainingTime(deadline) {
+    return deadline ? Math.max(0, deadline - Date.now()) : 0;
+}
+
+function formatCountdown(remainingMs) {
+    const totalSeconds = Math.ceil(remainingMs / 1000);
+    return `${String(Math.floor(totalSeconds / 60)).padStart(2, "0")}:${String(totalSeconds % 60).padStart(2, "0")}`;
+}
+
+function startAdminTimer() {
+    stopAdminTimer();
+    ensureTimersForStudentsAtCounters();
+    adminTimerInterval = window.setInterval(updateAdminTimers, 1000);
+    updateAdminTimers();
+}
+
+function ensureTimersForStudentsAtCounters() {
+    const activeServing = Storage.get("activeServing", {});
+    const deadlines = Storage.get("serviceDeadlines", {});
+    let updated = false;
+
+    Object.keys(activeServing).forEach(service => {
+        if (activeServing[service] && activeServing[service] !== "None" && !deadlines[service]) {
+            deadlines[service] = Date.now() + NO_SHOW_TIMEOUT_MS;
+            updated = true;
+        }
+    });
+
+    if (updated) Storage.set("serviceDeadlines", deadlines);
+}
+
+function stopAdminTimer() {
+    if (adminTimerInterval) {
+        window.clearInterval(adminTimerInterval);
+        adminTimerInterval = null;
+    }
+}
+
+function updateAdminTimers() {
+    if (currentStudent !== "admin") return;
+
+    const activeServing = Storage.get("activeServing", {});
+    const deadlines = Storage.get("serviceDeadlines", {});
+    const expiredService = Object.keys(activeServing).find(service =>
+        activeServing[service] && activeServing[service] !== "None" &&
+        deadlines[service] && getRemainingTime(deadlines[service]) === 0
+    );
+
+    if (expiredService) {
+        markStudentMissed(expiredService);
+        return;
+    }
+
+    Object.keys(activeServing).forEach(service => {
+        const timerDisplay = document.getElementById(`timer-${service}`);
+        if (timerDisplay && activeServing[service] && activeServing[service] !== "None") {
+            timerDisplay.textContent = formatCountdown(getRemainingTime(deadlines[service]));
+        }
+    });
+}
+
+/* =========================================================
+   10. REAL-TIME STORAGE & SYNC ENGINE
    ========================================================= */
 
 window.addEventListener("storage", () => {
@@ -470,6 +613,10 @@ window.addEventListener("storage", () => {
     if (currentStudent === "admin") {
         renderAdminDashboard();
         return;
+    }
+
+    if (document.getElementById("dashboard").style.display !== "none") {
+        updateServiceCards();
     }
 
     if (activeService) {
