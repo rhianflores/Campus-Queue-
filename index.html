@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CampusQueue | Student & Staff Portal</title>
+    <title>Wonder Queue | Student & Staff Portal</title>
     
     <!-- Link External CSS -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<!-- LOGIN PAGE -->
+<!-- =========================================================
+     LOGIN UI: sign in and account creation
+     ========================================================= -->
 <section id="loginPage">
     <div class="brand">
         <div class="brand-logo">USTP</div>
@@ -73,14 +75,16 @@
             <option>English</option>
             <option>Filipino</option>
         </select>
-        <p style="margin-top: 8px;">Powered by CampusQueue</p>
+        <p style="margin-top: 8px;">Powered by Wonderpup</p>
     </div>
 </section>
 
-<!-- DASHBOARD PAGE -->
+<!-- =========================================================
+     STUDENT DASHBOARD UI: services and pending queue summary
+     ========================================================= -->
 <section id="dashboard" style="display:none;">
     <header class="dashboard-header">
-        <h2>CampusQueue</h2>
+        <h2>Wonder Queue</h2>
         <span class="welcome-user">Welcome, <strong id="displayUsername">Student</strong></span>
         <button class="logout-btn" onclick="logout()">Logout</button>
     </header>
@@ -90,6 +94,15 @@
             <h1>University Services</h1>
             <p>Select a department below to request your queue ticket.</p>
         </div>
+
+        <section id="pendingQueueCard" class="pending-queue-card" style="display:none;">
+            <div>
+                <p class="pending-queue-label">YOUR PENDING QUEUE</p>
+                <h3 id="pendingQueueService">Registrar</h3>
+                <p id="pendingQueueDetails"></p>
+            </div>
+            <button class="view-ticket-btn" onclick="viewPendingTicket()">View Ticket</button>
+        </section>
 
         <div class="services">
             <article class="service-card" onclick="chooseService('Registrar')">
@@ -123,7 +136,9 @@
     </main>
 </section>
 
-<!-- QUEUE TICKET PAGE -->
+<!-- =========================================================
+     STUDENT TICKET UI: active queue ticket details
+     ========================================================= -->
 <section id="queuePage" style="display:none;">
     <div class="queue-card">
         <h2>Active Ticket</h2>
@@ -145,10 +160,12 @@
     </div>
 </section>
 
-<!-- STAFF ADMIN PANEL -->
+<!-- =========================================================
+     ADMIN PANEL UI: queue control, timers, status, and alerts
+     ========================================================= -->
 <section id="adminPage" style="display:none;">
     <header class="dashboard-header">
-        <h2>CampusQueue | Staff Admin</h2>
+        <h2>Wonder Queue | Staff Admin</h2>
         <button class="logout-btn" onclick="logout()">Logout</button>
     </header>
 
@@ -158,13 +175,17 @@
             <p>Click on any waiting person or use "Call Next" to process queue tickets in real time.</p>
         </div>
 
+        <section id="adminNotifications" class="admin-notifications" aria-live="polite"></section>
+
         <div id="adminQueueList" class="admin-grid">
             <!-- Dynamic Queue Cards Render Here -->
         </div>
     </main>
 </section>
 
-<!-- Link External JavaScript -->
+<div id="turnAlert" class="turn-alert" role="alert" aria-live="assertive" aria-atomic="true"></div>
+
+<!-- Application behavior and queue logic -->
 <script src="script.js"></script>
 </body>
 </html>
